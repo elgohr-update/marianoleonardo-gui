@@ -268,7 +268,6 @@ class HandleGeoElements extends Component {
     }
 
     render() {
-        console.log("render: HandleGeoElements");
         if (this.props.device === undefined) {
             return (<NoData />);
         }

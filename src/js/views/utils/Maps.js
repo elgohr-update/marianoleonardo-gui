@@ -73,8 +73,6 @@ class CustomMap extends Component {
     }
 
     componentDidMount() {
-        // create map
-        console.log("didmount: CustomMap");
         const { zoom, websocket } = this.props;
         this.map = L.map(this.state.mapId, {
             zoom,
@@ -100,7 +98,7 @@ class CustomMap extends Component {
 
         this.updateMarkers();
 
-        // adding websocket instance
+        // Adding callback to the Websocket instance
         if (websocket) {
             websocket.setCallback(this.handleDyData);
             websocket.init();
@@ -300,7 +298,6 @@ class CustomMap extends Component {
 const socketio = require('socket.io-client');
 class MapSocket {
     constructor(props) {
-        console.log("Creating MapSocket...");
         this.callback = null;
         this.socketInstance = null;
         this.target = `${window.location.protocol}//${window.location.host}`;
@@ -314,17 +311,14 @@ class MapSocket {
     }
 
     init() {
-        console.log("this.socketInstance", this.socketInstance);
         if (this.socketInstance) {
-            console.log("Already started.");
+            // The socket has already started.
             return;
         }
-        // Step 1: getting token
-        util
-            ._runFetch(this.token_url)
+        // Step 1: fetching Token
+        util._runFetch(this.token_url)
             .then((reply) => {
                 this.token = reply.token;
-                console.log("Token received: ", this.token);
                 // Step 2: initiate Socket 
                 this.socketInstance = socketio(this.target, {
                     query: `token=${this.token}`,
@@ -345,7 +339,6 @@ class MapSocket {
     }
 
     teardown() {
-        console.log("Teardown: ", this.socketInstance);
         if (this.socketInstance)
             this.socketInstance.close();
     }
@@ -368,7 +361,6 @@ class SmallPositionRenderer extends Component {
     }
 
     componentDidMount() {
-        console.log("DidMount: SmallPositionRenderer");
 
         if (!this.state.loadedLayers) {
             const layers = this.props.config.mapObj;
@@ -389,7 +381,6 @@ class SmallPositionRenderer extends Component {
     }
 
     componentWillUnmount() {
-        console.log("unmount: SmallPositionRenderer");
         this.state.websocket.teardown();
     }
 
@@ -459,7 +450,7 @@ class SmallPositionRenderer extends Component {
                 }
             }
         }
-        console.log("render: SmallPositionRenderer");
+
         return (
             <div className='graphLarge'>
                 <CustomMap websocket={this.state.websocket} key={util.guid()} toggleTracking={this.props.toggleTracking}
