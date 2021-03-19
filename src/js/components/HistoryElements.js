@@ -268,7 +268,6 @@ class HandleGeoElements extends Component {
     }
 
     render() {
-
         if (this.props.device === undefined) {
             return (<NoData />);
         }
@@ -304,6 +303,7 @@ class HandleGeoElements extends Component {
         if (geoconfs === undefined) {
             geoconfs = {};
         }
+
 
         if (validDevices.length === 0) {
             return <NoData />;

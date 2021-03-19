@@ -55,7 +55,7 @@ class CustomMap extends Component {
         this.state = {
             cm_visible: false,
             mapId: 'map' + util.guid(),
-            contextMenuInfo: {},
+            contextMenuInfo: {}
         };
         this.map = null;
         this.markers = null;
@@ -73,8 +73,7 @@ class CustomMap extends Component {
     }
 
     componentDidMount() {
-        // create map
-        const { zoom } = this.props;
+        const { zoom, websocket } = this.props;
         this.map = L.map(this.state.mapId, {
             zoom,
             center: [51.505, -0.09],
@@ -98,6 +97,12 @@ class CustomMap extends Component {
             .addLayers([]);
 
         this.updateMarkers();
+
+        // Adding callback to the Websocket instance
+        if (websocket) {
+            websocket.setCallback(this.handleDyData);
+            websocket.init();
+        }
     }
 
     componentDidUpdate() {
@@ -277,7 +282,7 @@ class CustomMap extends Component {
     render() {
         return (
             <Fragment>
-                <div onClick={this.handleMapClick} id={this.state.mapId}/>
+                <div onClick={this.handleMapClick} id={this.state.mapId} />
                 {this.state.cm_visible ? (
                     <ContextMenuComponent
                         closeContextMenu={this.closeContextMenu}
@@ -285,58 +290,57 @@ class CustomMap extends Component {
                         metadata={this.state.contextMenuInfo}
                     />
                 ) : null}
-                <MapSocket receivedSocketInfo={this.handleDyData}/>
             </Fragment>
         );
     }
 }
 
-
-class MapSocket extends Component {
+const socketio = require('socket.io-client');
+class MapSocket {
     constructor(props) {
-        super(props);
-        this.state = { data: [] };
+        this.callback = null;
+        this.socketInstance = null;
+        this.target = `${window.location.protocol}//${window.location.host}`;
+        this.token_url = `${this.target}/stream/socketio`;
+        this.token = null;
     }
 
-    componentDidMount() {
-        const rsi = this.props.receivedSocketInfo;
-        const socketio = require('socket.io-client');
-        const target = `${window.location.protocol}//${window.location.host}`;
-        const token_url = `${target}/stream/socketio`;
+    setCallback(callbackHandleData) {
+        if (!this.callback)
+            this.callback = callbackHandleData;
+    }
 
-        function _getWsToken() {
-            util
-                ._runFetch(token_url)
-                .then((reply) => {
-                    init(reply.token);
-                })
-                .catch((error) => {
+    init() {
+        if (this.socketInstance) {
+            // The socket has already started.
+            return;
+        }
+        // Step 1: fetching Token
+        util._runFetch(this.token_url)
+            .then((reply) => {
+                this.token = reply.token;
+                // Step 2: initiate Socket 
+                this.socketInstance = socketio(this.target, {
+                    query: `token=${this.token}`,
+                    transports: ['polling'],
                 });
-        }
+                this.socketInstance.on('all', (data) => {
+                    this.callback(data);
+                });
 
-        function init(token) {
-            deviceListSocket = socketio(target, {
-                query: `token=${token}`,
-                transports: ['polling'],
-            });
-            deviceListSocket.on('all', (data) => {
-                rsi(data);
+                this.socketInstance.on('error', (data) => {
+                    console.error("Websocket error: ", data);
+                });
+            })
+            .catch((error) => {
+                console.error("An error occurred to  fetch token to socket");
             });
 
-            deviceListSocket.on('error', (data) => {
-                if (deviceListSocket !== null) deviceListSocket.close();
-            });
-        }
-
-        _getWsToken();
     }
 
-    componentWillUnmount() {
-        if (deviceListSocket !== null) deviceListSocket.close();
-    }
-
-    render() {
-        return null;
+    teardown() {
+        if (this.socketInstance)
+            this.socketInstance.close();
     }
 }
 
@@ -347,6 +351,7 @@ class SmallPositionRenderer extends Component {
         this.state = {
             isTerrain: true,
             layers: [],
+            websocket: null,
             loadedLayers: false,
             zoom: (this.props.zoom ? this.props.zoom : this.props.config.mapZoom ? this.props.config.mapZoom : 12),
         };
@@ -356,6 +361,7 @@ class SmallPositionRenderer extends Component {
     }
 
     componentDidMount() {
+
         if (!this.state.loadedLayers) {
             const layers = this.props.config.mapObj;
             for (const index in layers) {
@@ -366,7 +372,18 @@ class SmallPositionRenderer extends Component {
                 layers
             });
         }
+        // socket to be used for position updating
+        const websocket = new MapSocket();
+        this.setState({
+            websocket: websocket,
+        });
+
     }
+
+    componentWillUnmount() {
+        this.state.websocket.teardown();
+    }
+
 
     toggleLayer(id) {
         const layers = this.state.layers;
@@ -436,9 +453,9 @@ class SmallPositionRenderer extends Component {
 
         return (
             <div className='graphLarge'>
-                <CustomMap key={util.guid()} toggleTracking={this.props.toggleTracking}
-                           allowContextMenu={this.props.allowContextMenu} zoom={this.state.zoom}
-                           markersData={parsedEntries}/>
+                <CustomMap websocket={this.state.websocket} key={util.guid()} toggleTracking={this.props.toggleTracking}
+                    allowContextMenu={this.props.allowContextMenu} zoom={this.state.zoom}
+                    markersData={parsedEntries} />
                 {(this.props.showLayersIcons && this.state.layers.length)
                     ? (
                         <div className="col s12 layer-box">
@@ -477,13 +494,13 @@ class LayerBox extends Component {
         const layerOpacity = 0.3;
         const imageOverlay = this.props.config.isVisible ?
             <ImageOverlay opacity={layerOpacity} bounds={layerMapBounds}
-                          url={this.props.config.overlay_data.path}/> : null;
+                url={this.props.config.overlay_data.path} /> : null;
         return (
             <div className="layer-mr">
                 <div title={this.props.config.description}
-                     className={`layer-div ${this.props.config.isVisible ? 'active-btn' : ''}`}
-                     onClick={this.toggleLayer}>
-                    <i className="fa fa-map"/>
+                    className={`layer-div ${this.props.config.isVisible ? 'active-btn' : ''}`}
+                    onClick={this.toggleLayer}>
+                    <i className="fa fa-map" />
                 </div>
                 {imageOverlay}
             </div>
