@@ -34,7 +34,7 @@ const CommandFooter = ({ deviceId, attrLabel, deviceType = '' }) => {
                     className={'sender-button'}
                     onClick={() => handleClick()}
                 >
-                    <i className={'fa fa-paper-plane'}/>
+                    <i className={'fa fa-paper-plane'} />
                 </button>
             </div>
         );
@@ -47,7 +47,7 @@ const NoData = ({ device, attr, deviceType }) => (
         <div className="details-card-content">
             <div className="details-card-text">{t('devices:no_data_received')}</div>
         </div>
-        <CommandFooter deviceId={device.id} attrLabel={attr} deviceType={deviceType}/>
+        <CommandFooter deviceId={device.id} attrLabel={attr} deviceType={deviceType} />
     </Fragment>
 );
 
@@ -56,7 +56,7 @@ const NoDataAv = ({ device, attr, deviceType }) => (
         <div className="details-card-content">
             <div className="details-card-text">{t('devices:no_data_avaliable')}</div>
         </div>
-        <CommandFooter deviceId={device.id} attrLabel={attr} deviceType={deviceType}/>
+        <CommandFooter deviceId={device.id} attrLabel={attr} deviceType={deviceType} />
     </Fragment>
 );
 
@@ -84,6 +84,7 @@ const Graph = (props) => {
         if ((k === 0) || (k === values.length - 1)) {
             return i;
         }
+        return '';
     });
 
     const data = {
@@ -133,7 +134,7 @@ const Graph = (props) => {
 
     return (
         <div className='graphLarge'>
-            <Line data={data} options={options}/>
+            <Line data={data} options={options} />
         </div>
 
     );
@@ -174,8 +175,8 @@ const HistoryList = (props) => {
                                                                 <pre>{JSON.stringify(i.value, undefined, 2)}</pre>
                                                                 :
                                                                 <span className="red-text">
-                                        <em><Trans i18nKey="devices:invalid_data"/></em>
-                                    </span>
+                                                                    <em><Trans i18nKey="devices:invalid_data" /></em>
+                                                                </span>
                                                         }
                                                     </Fragment>
                                             }
@@ -189,7 +190,7 @@ const HistoryList = (props) => {
                     ))}
                 </div>
                 <CommandFooter deviceId={props.device.id} attrLabel={props.attr}
-                               deviceType={props.deviceType}/>
+                    deviceType={props.deviceType} />
             </div>
         );
     } else {
@@ -197,7 +198,7 @@ const HistoryList = (props) => {
             <div className="valign-wrapper full-height background-info">
                 <div className="full-width center">
                     No data
-                    <br/>
+                    <br />
                     available
                 </div>
             </div>
@@ -269,7 +270,7 @@ class HandleGeoElements extends Component {
     render() {
 
         if (this.props.device === undefined) {
-            return (<NoData/>);
+            return (<NoData />);
         }
 
         let validDevices = null;
@@ -305,7 +306,7 @@ class HandleGeoElements extends Component {
         }
 
         if (validDevices.length === 0) {
-            return <NoData/>;
+            return <NoData />;
         } else {
             if (this.props.isStatic) {
                 return <span>
@@ -357,7 +358,7 @@ const Attr = (props) => {
     if (newValuesForFwStateAndResult !== null) {
         props.MeasureStore.data[props.device.id][`_${props.attr}`] = newValuesForFwStateAndResult;
         return (
-            <HistoryList {...props} type="string"/>
+            <HistoryList {...props} type="string" />
         );
     }
 
