@@ -6,7 +6,7 @@ import FirmwareHelper from '../comms/firmware/FirmwareHelper';
 import util from '../comms/util/util';
 import { SmallPositionRenderer } from 'Views/utils/Maps';
 import { t } from 'i18next';
-import LeafMap, {MapWithSocket} from '../views/utils/LeafMap';
+import LeafMap, { MapWithSocket } from '../views/utils/LeafMap';
 
 const CommandFooter = ({ deviceId, attrLabel, deviceType = '' }) => {
 
@@ -166,7 +166,7 @@ const HistoryList = (props) => {
                                         :
                                         <Fragment>
                                             {
-                                                ((attrType === typeof i.value) && (attrType !== 'object' && (i.value !== null) && (i.value.length !== undefined) && (i.value.length > 0))) ?
+                                                ((attrType === typeof i.value) && (attrType !== 'object' && (i.value !== null) && (i.value.length !== undefined))) ?
                                                     <Fragment> {i.value.toString()} </Fragment>
                                                     :
                                                     <Fragment>
@@ -175,7 +175,7 @@ const HistoryList = (props) => {
                                                                 <pre>{JSON.stringify(i.value, undefined, 2)}</pre>
                                                                 :
                                                                 <span className="red-text">
-                                                                    <em><Trans i18nKey="devices:invalid_data" /></em>
+                                                                    <em>{t('devices:invalid_data')}</em>
                                                                 </span>
                                                         }
                                                     </Fragment>
@@ -298,7 +298,7 @@ class HandleGeoElements extends Component {
             validDevices = this.handleDevicePosition(this.props.MeasureStore.data[this.props.device.id]);
         }
 
-        if (validDevices.length === 0)  return <NoData />;
+        if (validDevices.length === 0) return <NoData />;
 
         if (this.props.isStatic) {
             return <LeafMap point={validDevices[0].sp_value}> </LeafMap>;
