@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import AltContainer from 'alt-container';
 import { translate, Trans } from 'react-i18next';

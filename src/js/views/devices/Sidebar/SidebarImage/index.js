@@ -269,6 +269,7 @@ class SidebarImage extends Component {
             HistoryActions.fetchLastAttrDataByDeviceIDAndAttrLabel.defer(deviceId, versionLbAttr, 'version');
             HistoryActions.fetchLastAttrDataByDeviceIDAndAttrLabel.defer(deviceId, transLbAttr, 'transfer');
 
+            // @TODO this could be improved
             FWSocketIO.disconnect();
             FWSocketIO.connect(deviceId, this.receivedImageInformation);
 
@@ -306,7 +307,7 @@ class SidebarImage extends Component {
         let relatedLabel = '';
         attrs[templateId].forEach((attr) => {
             if (attr.metadata) {
-                const el = attr.metadata.filter(meta => meta.label === labelMeta);
+                const el = attr.metadata.filter((meta) => meta.label === labelMeta);
                 if (el.length) {
                     relatedLabel = attr.label;
                 } // found the attr
@@ -489,7 +490,7 @@ class SidebarImage extends Component {
                                         <div className="body-form-fw">
                                             <ImgToTransfer
                                                 currentImgId={this.currentImageId}
-                                                onChange={e => this.onChangeImage(e)}
+                                                onChange={(e) => this.onChangeImage(e)}
                                                 options={listAvailableOptionsImages}
                                                 onClickBtnTransfer={this.callUploadImage}
                                                 onClickBtnApply={this.showModalApply}
@@ -562,10 +563,16 @@ SidebarImage.propTypes = {
     showSidebarImage: PropTypes.bool,
     toogleSidebarImages: PropTypes.func.isRequired,
     is: PropTypes.shape({
-        images: PropTypes.array,
+        images: PropTypes.arrayOf(
+            PropTypes.shape(
+                { fw_version: PropTypes.string },
+            ),
+        ),
     }),
     ds: PropTypes.shape({
-        devices: PropTypes.array,
+        devices: PropTypes.shape({
+            attrs: PropTypes.shape({}),
+        }),
     }),
 };
 
