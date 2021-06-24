@@ -232,6 +232,7 @@ class SidebarImage extends Component {
             };
         }
         const { is: { history } } = props;
+
         if (state.attrs.fwUpdateVersion !== history.version
             || state.attrs.fwUpdateResult !== history.result
             || state.attrs.fwUpdateState !== history.state
@@ -268,6 +269,7 @@ class SidebarImage extends Component {
             HistoryActions.fetchLastAttrDataByDeviceIDAndAttrLabel.defer(deviceId, versionLbAttr, 'version');
             HistoryActions.fetchLastAttrDataByDeviceIDAndAttrLabel.defer(deviceId, transLbAttr, 'transfer');
 
+            // @TODO this could be improved
             FWSocketIO.disconnect();
             FWSocketIO.connect(deviceId, this.receivedImageInformation);
 
@@ -288,12 +290,22 @@ class SidebarImage extends Component {
         const { deviceId, ds } = this.props;
         const { templateIdAllowedImage: templateId } = this.state;
         const device = ds.devices[deviceId];
-        let relatedLabel = '';
-        if (!device || !device.attrs
-            || device.attrs.length < 1 || device.attrs.length === undefined) {
-            return relatedLabel;
+        // device not found
+        if (!device) {
+            return '';
         }
-        device.attrs[templateId].forEach((attr) => {
+        // attrs is an object in format { templateId: array }
+        // not an array
+        const { attrs } = device;
+        if (!attrs || (Object.keys(attrs).length === 0 && attrs.constructor === Object)) {
+            return '';
+        }
+        // no attrs for the template
+        if (!attrs[templateId]) {
+            return '';
+        }
+        let relatedLabel = '';
+        attrs[templateId].forEach((attr) => {
             if (attr.metadata) {
                 const el = attr.metadata.filter((meta) => meta.label === labelMeta);
                 if (el.length) {
@@ -551,10 +563,16 @@ SidebarImage.propTypes = {
     showSidebarImage: PropTypes.bool,
     toogleSidebarImages: PropTypes.func.isRequired,
     is: PropTypes.shape({
-        images: PropTypes.array,
+        images: PropTypes.arrayOf(
+            PropTypes.shape(
+                { fw_version: PropTypes.string },
+            ),
+        ),
     }),
     ds: PropTypes.shape({
-        devices: PropTypes.array,
+        devices: PropTypes.shape({
+            attrs: PropTypes.shape({}),
+        }),
     }),
 };
 
