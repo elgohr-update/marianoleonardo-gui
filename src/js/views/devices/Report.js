@@ -1,8 +1,6 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import moment from 'moment';
-import util from 'Comms/util';
-import { baseURL } from 'Src/config';
-
+import historyManager from 'Comms/devices/HistoryManager';
 import PropTypes from 'prop-types';
 import { DojotCustomButton } from 'Components/DojotButton';
 import { ExportToCsv } from 'export-to-csv';
@@ -37,7 +35,6 @@ const ReportComponent = ({
     const [createdData, setCreatedData] = useState(false);
 
     const current = new Date();
-    // it returns a timestamp
     const prior = new Date().setDate(current.getDate() - 30);
     const [dateFrom, setDateFrom] = useState(datetimeLocalFormatInput(prior));
     const [dateTo, setDateTo] = useState(datetimeLocalFormatInput(current));
@@ -106,11 +103,15 @@ const ReportComponent = ({
         if (!sanityChecking()) return;
         setCreatedData(false);
         const attrs = extractAttrsLabels(listAttrDySelected);
-        attrs.push('_'); // to always request 2 attrs
+        attrs.push('_'); // workaround to always request 2 attrs
         const mergedAttr = attrs.join('&attr=');
-        const URL = `history/device/${deviceId}/history?attr=${mergedAttr}&dateFrom=${datetimeUTC(dateFrom)}&dateTo=${datetimeUTC(dateTo)}`;
 
-        util.GET(`${baseURL}${URL}`).then((result) => {
+        historyManager.getHistory(
+            deviceId,
+            mergedAttr,
+            datetimeUTC(dateFrom),
+            datetimeUTC(dateTo),
+        ).then((result) => {
             const { _, ...rws } = result; // removing the workaround
             setRows(rws);
             setCreatedData(true);
