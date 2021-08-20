@@ -2,8 +2,8 @@
     "title": "Report",
     "to": "to",
     "generate": "generate",
-    "html": "Open into HTML",
-    "csv": "Download as CSV",
+    "html": "as HTML",
+    "csv": "as CSV",
     "alerts": {
         "select_dy": "Select at least one Dynamic Attribute.",
         "datefrom_miss": "Fill in the start date correctly.",

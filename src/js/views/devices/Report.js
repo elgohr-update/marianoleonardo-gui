@@ -11,14 +11,19 @@ import ReportTable from './ReportPage.js';
 
 const extractAttrsLabels = (listAttrDySelected) => (listAttrDySelected.map((attr) => attr.label));
 
-const getCsvConfig = (deviceId, dateFrom, dateTo) => ({
-    fieldSeparator: ',',
-    showLabels: true,
-    filename: `${deviceId}_export_${dateFrom}_to_${dateTo}`,
-    useBom: true,
-    useKeysAsHeaders: true,
-    useTextFile: false,
-});
+const getCsvConfig = (deviceId, dateFrom, dateTo) => {
+    const shortFrom = moment(dateFrom).format('DD-MM-HHmm');
+    const shortTo = moment(dateTo).format('DD-MM-HHmm');
+
+    return {
+        fieldSeparator: ',',
+        showLabels: true,
+        filename: `export_${deviceId}_${shortFrom}_to_${shortTo}`,
+        useBom: true,
+        useKeysAsHeaders: true,
+        useTextFile: false,
+    };
+};
 
 const datetimeLocalFormatInput = (t) => moment(t).format('YYYY-MM-DDThh:mm');
 
@@ -41,7 +46,6 @@ const ReportComponent = ({
     useEffect(() => {
         setCreatedData(false);
     }, [listAttrDySelected]);
-
 
     const checkClose = () => {
         setCallReport(false);
@@ -140,7 +144,6 @@ const ReportComponent = ({
             }
             tsList[line.ts].push(nwLne);
         });
-
 
         // create table
         Object.entries(tsList).forEach(([ts, attrs]) => {
