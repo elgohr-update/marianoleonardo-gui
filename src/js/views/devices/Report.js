@@ -90,7 +90,6 @@ const ReportComponent = ({
         return true;
     };
 
-
     const generateData = () => {
         if (!checkSanity()) return;
         setLoadedData(false);
