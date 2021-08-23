@@ -23,7 +23,7 @@ const getCsvConfig = (deviceId, dateFrom, dateTo) => {
     };
 };
 
-const datetimeLocalFormatInput = (t) => moment(t).format('YYYY-MM-DDThh:mm');
+const datetimeLocalFormat = (t) => moment(t).format('YYYY-MM-DDThh:mm');
 
 const datetimeUTC = (t) => moment(t).utc().format('YYYY-MM-DDTHH:mm');
 
@@ -31,35 +31,30 @@ const ReportComponent = ({
     deviceId, deviceLabel,
     listAttrDySelected, t,
 }) => {
-    const [callReport, setCallReport] = useState(false);
-    const [createdData, setCreatedData] = useState(false);
+    const [openHtml, setOpenHtml] = useState(false);
+    const [loadedData, setLoadedData] = useState(false);
 
     const current = new Date();
     const prior = new Date().setDate(current.getDate() - 30);
-    const [dateFrom, setDateFrom] = useState(datetimeLocalFormatInput(prior));
-    const [dateTo, setDateTo] = useState(datetimeLocalFormatInput(current));
+    const [dateFrom, setDateFrom] = useState(datetimeLocalFormat(prior));
+    const [dateTo, setDateTo] = useState(datetimeLocalFormat(current));
     const [rows, setRows] = useState([]);
 
     useEffect(() => {
-        setCreatedData(false);
+        setLoadedData(false);
     }, [listAttrDySelected]);
 
-    const checkClose = () => {
-        setCallReport(false);
-    };
-
-    const dateToOnChange = (e) => {
+    const changeDateTo = (e) => {
         const { value } = e.target;
         setDateTo(value);
     };
 
-    const dateFromOnChange = (e) => {
+    const changeDateFrom = (e) => {
         const { value } = e.target;
         setDateFrom(value);
     };
 
-    const sanityChecking = () => {
-        // sanity checking
+    const checkSanity = () => {
         if (listAttrDySelected.length === 0) {
             toaster.warning(t('report:alerts.select_dy'));
             return false;
@@ -95,13 +90,10 @@ const ReportComponent = ({
         return true;
     };
 
-    const openHtml = () => {
-        setCallReport(true);
-    };
 
     const generateData = () => {
-        if (!sanityChecking()) return;
-        setCreatedData(false);
+        if (!checkSanity()) return;
+        setLoadedData(false);
         const attrs = extractAttrsLabels(listAttrDySelected);
         attrs.push('_'); // workaround to always request 2 attrs
         const mergedAttr = attrs.join('&attr=');
@@ -114,7 +106,7 @@ const ReportComponent = ({
         ).then((result) => {
             const { _, ...rws } = result; // removing the workaround
             setRows(rws);
-            setCreatedData(true);
+            setLoadedData(true);
         }).catch(() => {
             setRows([]);
             toaster.warning(t('report:reports.not_found'));
@@ -176,7 +168,7 @@ const ReportComponent = ({
                     name="dateFrom"
                     type="datetime-local"
                     defaultValue={dateFrom}
-                    onChange={dateFromOnChange}
+                    onChange={changeDateFrom}
                     max={dateTo}
                 />
             </span>
@@ -188,9 +180,9 @@ const ReportComponent = ({
                     name="dateTo"
                     type="datetime-local"
                     defaultValue={dateTo}
-                    onChange={dateToOnChange}
+                    onChange={changeDateTo}
                     min={dateFrom}
-                    max={datetimeLocalFormatInput(new Date())}
+                    max={datetimeLocalFormat(new Date())}
                 />
             </span>
             <span>
@@ -199,12 +191,12 @@ const ReportComponent = ({
                     onClick={generateData}
                 />
             </span>
-            {createdData ? (
+            {loadedData ? (
                 <Fragment>
                     <span>
                         <DojotCustomButton
                             label={t('report:html')}
-                            onClick={openHtml}
+                            onClick={() => setOpenHtml(true)}
                         />
                     </span>
                     <span>
@@ -215,9 +207,9 @@ const ReportComponent = ({
                     </span>
                 </Fragment>
             ) : null}
-            {callReport ? (
+            {openHtml ? (
                 <ReportTable
-                    checkClose={checkClose}
+                    checkClose={() => setOpenHtml(false)}
                     deviceLabel={deviceLabel}
                     rows={rows}
                     deviceId={deviceId}
