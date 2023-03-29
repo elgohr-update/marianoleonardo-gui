@@ -61,7 +61,7 @@ jobs:
           echo ::set-output name=version::$RELEASE_VERSION
 
     - name: Build and Push
-      uses: elgohr/Publish-Docker-Github-Action@2.16
+      uses: elgohr/Publish-Docker-Github-Action@v5
       with:
         name: ${{ steps.get_owner.outputs.owner }}/gui
         username: ${{ secrets.DOCKER_USERNAME }}
